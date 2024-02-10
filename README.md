@@ -1,6 +1,11 @@
 # Mechanon App
 
-A simple Android app to run integrations locally.
+A simple Android app to run integrations locally. Primary use cases:
+
+- Forwarding all incoming SMS or notifications to an own custom webhook.
+
+  <img align="right" width="140" src="https://github.com/erdos/mechanon/assets/5559823/352f2b27-d97c-40c7-a3c6-3b3de837ad68"/>
+  <img align="right" width="140" src="https://github.com/erdos/mechanon/assets/5559823/0c05b1a7-6a5c-47a7-a6a4-0552aa5cb6b0"/>
 
 ## Motivation
 
