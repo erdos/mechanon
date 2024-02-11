@@ -3,14 +3,26 @@ package dev.erdos.automechanon
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.util.Log
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import dev.erdos.automechanon.actions.VibrateActionFactory
 import dev.erdos.automechanon.actions.WebhookActionFactory
 import dev.erdos.automechanon.triggers.NotificationTriggerFactory
 import dev.erdos.automechanon.triggers.SmsMessageTriggerFactory
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.lang.Exception
+import java.time.Instant
 import java.util.UUID
 import java.util.UUID.randomUUID
 
@@ -138,26 +150,60 @@ fun deleteAutomationBy(uuid: UUID) {
     __state!!.postValue(Automations(__state!!.value!!.automations.filter { it.uuid != uuid }))
 }
 
-// fun findAutomationBy(uuid: UUID) = __state!!.value!!.automations.first { it.uuid == uuid }
-
 fun bindings() : Lens<Automations> = Lens.of(__state!!)
 
 fun findAutomationLiveDataById(uuid: UUID) : Lens<Automation> = bindings()
     .reading { a -> a.automations.find { it.uuid == uuid }!! }
     .writing { a, x -> a.copy(automations = a.automations.map { if (it.uuid == x.uuid) x else it }) }
 
+private suspend fun run1(ctx: Context, log: AuditLogEntry, step: Step<*>): AuditLogEntry = try {
+    when (val result = step.fire(ctx, log.data)) {
+        is StepResult.Proceed -> log.copy(data = result.data, state = AutomationRunResult.DONE)
+        is StepResult.Skipped -> log.copy(state = AutomationRunResult.SKIPPED)
+        is StepResult.Erred -> log.copy(state = AutomationRunResult.ERROR, errorMessage = result.message)
+    }
+} catch (e: Exception) {
+    log.copy(state = AutomationRunResult.ERROR, errorMessage = e.message)
+}
+
 suspend fun dispatch(ctx: Context, msg: Any) {
+    val db = getDatabase(ctx)
     getState(ctx).value!!.automations
         .filter { it.isReadyToUse(ctx) }
         .forEach {auto ->
             auto.trigger!!.tryCastInput(msg) ?.let {
                 Log.i("Model", "Triggering automation $auto")
-                val data = (auto.trigger as TriggerStep<Any, *>).initialToStepDataImpl(ctx, it)
-                var result = auto.trigger.fire(ctx, data)
-                if (result is StepResult.Proceed) {
-                    result = auto.action!!.fire(ctx, result.data)
+                val initialData = (auto.trigger as TriggerStep<Any, *>).initialToStepDataImpl(ctx, it)
+                var audit = AuditLogEntry(
+                    automation = auto.uuid,
+                    state = AutomationRunResult.SKIPPED,
+                    data = initialData)
+                audit = run1(ctx, audit, auto.trigger)
+                if (audit.state == AutomationRunResult.DONE) {
+                    audit = run1(ctx, audit, auto.action!!)
                 }
-                Log.i("Model", "Triggering automation $auto resulted in $result")
+                db.insertLogEntry(audit)
             }
         }
+}
+
+fun retry(ctx: Context, oldEntry: AuditLogEntry): Job {
+    var entry = oldEntry.copy(createdAt = Instant.now(), errorMessage = null)
+    val automation = findAutomationLiveDataById(entry.automation).asMutableLiveData().value!!
+    return GlobalScope.launch {
+        entry = run1(ctx, entry, automation.trigger!!)
+        if (entry.state == AutomationRunResult.DONE) {
+            entry = run1(ctx, entry, automation.action!!)
+        }
+        getDatabase(ctx).insertLogEntry(entry)
+    }
+}
+
+@Composable
+fun DataPoint.UI(value: String? = null) {
+    Text(text = value?.let { "${name}: $it" } ?: name,
+        modifier = Modifier
+            .padding(4.dp)
+            .border(1.dp, Color.LightGray, RoundedCornerShape(6.dp))
+            .padding(4.dp))
 }

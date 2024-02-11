@@ -78,11 +78,9 @@ fun MainScreen(liveData: LiveData<Automations>) {
                 val showMenu = remember { mutableStateOf(false) }
                 Card(modifier = Modifier
                     .padding(4.dp)
-                    .combinedClickable(onClick = {
-                        val intent = Intent(ctx, EditAutomationActivity::class.java)
-                        intent.putExtra("uuid", automation.uuid.toString())
-                        ctx.startActivity(intent)
-                    }, onLongClick = { showMenu.value = true })
+                    .combinedClickable(
+                        onClick = { jumpToAutomation(ctx, automation) },
+                        onLongClick = { showMenu.value = true })
                 ) {
                     DropdownMenu(
                         expanded = showMenu.value,
@@ -100,6 +98,12 @@ fun MainScreen(liveData: LiveData<Automations>) {
             }
         }
     }
+}
+
+fun jumpToAutomation(ctx: Context, automation: Automation) {
+    val intent = Intent(ctx, EditAutomationActivity::class.java)
+    intent.putExtra("uuid", automation.uuid.toString())
+    ctx.startActivity(intent)
 }
 
 private fun version(context: Context): String = try {

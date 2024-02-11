@@ -9,10 +9,10 @@ android {
 
     defaultConfig {
         applicationId = "dev.erdos.automechanon"
-        minSdk = 24
+        minSdk = 26 // default was 24. but 26 has java.io.time
         targetSdk = 34
-        versionCode = 2
-        versionName = "0.2.0-SNAPSHOT"
+        versionCode = 3
+        versionName = "0.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -73,6 +73,12 @@ dependencies {
 
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
+    val sqlite_version = "2.4.0"
+    implementation("androidx.sqlite:sqlite:$sqlite_version")     // Java language implementation
+    implementation("androidx.sqlite:sqlite-ktx:$sqlite_version")    // Kotlin
+    // Implementation of the AndroidX SQLite interfaces via the Android framework APIs.
+    implementation("androidx.sqlite:sqlite-framework:$sqlite_version")
 }
 
 //tasks.test {

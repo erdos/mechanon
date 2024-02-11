@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -101,7 +101,7 @@ val NotificationTriggerFactory = object: ItemFactory<AndroidNotificationTrigger>
     override fun fromJson(node: JSONObject) = AndroidNotificationTrigger(
         UUID.fromString(node.getString("uuid")),
         node.optString("appNamePattern"))
-    override fun produces() = setOf(PACK, TICKER, TITLE, TEXT)
+    override fun produces() = setOf(PACK, TICKER, TITLE, TEXT, APP)
 
     @Composable override fun MakeSettings(model: Lens<AndroidNotificationTrigger>) {
         val data = model.asMutableLiveData()
@@ -119,7 +119,7 @@ val NotificationTriggerFactory = object: ItemFactory<AndroidNotificationTrigger>
                         onValueChange = { txt -> data.update { it.copy(appNamePattern = txt) } },
                         label = { Text(text = "App name contains pattern") })
                     IconButton(onClick = { data.update { it.copy(appNamePattern = null) } }) {
-                        Icon(Icons.Filled.Delete, "Remove pattern")
+                        Icon(Icons.Filled.Clear, "Remove pattern")
                     }
                 }
             }
