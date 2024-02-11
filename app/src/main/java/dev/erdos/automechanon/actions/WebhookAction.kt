@@ -116,6 +116,8 @@ val WebhookActionFactory = object : ItemFactory<WebhookAction> {
         payloadPattern = node.optString("payload", "")
     )
 
+    override fun jsonDiscriminator() = "WebhookAction"
+
     override fun produces() = setOf<DataPoint>() // TODO: body, status, etc
 
     @Composable

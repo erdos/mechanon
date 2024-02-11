@@ -11,8 +11,8 @@ android {
         applicationId = "dev.erdos.automechanon"
         minSdk = 26 // default was 24. but 26 has java.io.time
         targetSdk = 34
-        versionCode = 4
-        versionName = "0.2.1"
+        versionCode = 5
+        versionName = "0.2.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -16,7 +16,7 @@ import java.util.UUID
 
 val MESSAGE = DataPoint("message")
 
-class SmsMessageTrigger(private val uuid: UUID) : TriggerStep<SmsMessage, SmsMessageTrigger> {
+data class SmsMessageTrigger(private val uuid: UUID) : TriggerStep<SmsMessage, SmsMessageTrigger> {
 
     override suspend fun fire(context: Context, data: StepData): StepResult = StepResult.Proceed(data)
 
@@ -35,6 +35,8 @@ val SmsMessageTriggerFactory = object: ItemFactory<SmsMessageTrigger> {
     override fun name() = "SMS trigger"
     override fun makeDummy() = SmsMessageTrigger(uuid = UUID.randomUUID())
     override fun fromJson(node: JSONObject) = SmsMessageTrigger(UUID.fromString(node.getString("uuid")))
+    override fun jsonDiscriminator() = "SmsTrigger"
+
     override fun produces() = setOf(MESSAGE)
 
     @Composable override fun MakeSettings(model: Lens<SmsMessageTrigger>) {

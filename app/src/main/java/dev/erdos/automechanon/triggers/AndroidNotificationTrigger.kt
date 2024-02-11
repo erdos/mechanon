@@ -56,7 +56,7 @@ data class AndroidNotificationTrigger(private val uuid: UUID, val appNamePattern
         val ticker = initial.notification.tickerText?.toString()
         val extras = initial.notification.extras
         initial.isOngoing
-        val title = extras.getString("android.title")
+        val title = extras.getCharSequence("android.title")?.toString()
         val text = extras.getCharSequence("android.text").toString()
         Log.i("NotificationService", "extras: $extras")
         return StepData(
@@ -102,6 +102,9 @@ val NotificationTriggerFactory = object: ItemFactory<AndroidNotificationTrigger>
     override fun fromJson(node: JSONObject) = AndroidNotificationTrigger(
         UUID.fromString(node.getString("uuid")),
         node.optString("appNamePattern"))
+
+    override fun jsonDiscriminator() = "NotificationTrigger"
+
     override fun produces() = setOf(PACKAGE, TICKER, TITLE, TEXT, APP)
 
     @Composable override fun MakeSettings(model: Lens<AndroidNotificationTrigger>) {

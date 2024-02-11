@@ -52,6 +52,7 @@ private fun Vibrator.vibrate() {
 val VibrateActionFactory = object: ItemFactory<VibrateAction> {
     override fun toJson(obj: VibrateAction) = JSONObject(mapOf("uuid" to obj.getUuid().toString()))
     override fun fromJson(node: JSONObject) = VibrateAction(UUID.fromString(node.getString("uuid")))
+    override fun jsonDiscriminator() = "VibrateAction"
     override fun produces() = setOf<DataPoint>()
     @Composable
     override fun MakeSettings(model: Lens<VibrateAction>) {

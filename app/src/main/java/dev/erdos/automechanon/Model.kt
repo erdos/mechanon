@@ -35,6 +35,7 @@ interface ItemFactory<A> {
 
     fun toJson(obj: A) : JSONObject
     fun fromJson(node: JSONObject) : A
+    fun jsonDiscriminator() : String
 
     fun produces(): Set<DataPoint>
 
@@ -42,7 +43,7 @@ interface ItemFactory<A> {
     fun MakeSettings(model: Lens<A>)
 }
 
-val TRIGGERS = setOf(NotificationTriggerFactory, SmsMessageTriggerFactory)
+val TRIGGERS = setOf(SmsMessageTriggerFactory, NotificationTriggerFactory)
 val ACTIONS = setOf(WebhookActionFactory, VibrateActionFactory)
 
 interface Step<S: Step<S>> {
@@ -84,7 +85,7 @@ interface ActionStep<S : ActionStep<S>> : Step<S>
 private fun <S: Step<*>> toJsonWithClass(step: S): JSONObject {
     val fact = step.factory() as ItemFactory<S>
     val json = fact.toJson(step)
-    json.put("class", fact.javaClass.simpleName)
+    json.put("class", fact.jsonDiscriminator())
     return json
 }
 
@@ -99,11 +100,11 @@ data class Automation(
         uuid = UUID.fromString(json.getString("uuid")),
         title = json.optString("title", "- no title"),
         trigger = json.optJSONObject("trigger")?.let {
-                TRIGGERS.find { f -> it.getString("class") == f.javaClass.simpleName }
-            }?.fromJson(json.getJSONObject("trigger")),
+                TRIGGERS.find { f -> it.getString("class") == f.jsonDiscriminator() }?.fromJson(it)
+            },
         action = json.optJSONObject("action")?.let {
-                ACTIONS.find { f -> it.getString("class") == f.javaClass.simpleName }
-            }?.fromJson(json.getJSONObject("action")))
+                ACTIONS.find { f -> it.getString("class") == f.jsonDiscriminator() }?.fromJson(it)
+            })
 
     fun toJson() : JSONObject = JSONObject(mapOf(
         "uuid" to uuid.toString(),
