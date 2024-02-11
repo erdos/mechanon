@@ -34,12 +34,19 @@ val TRIGGERS = setOf(NotificationTriggerFactory, SmsMessageTriggerFactory)
 val ACTIONS = setOf(WebhookActionFactory, VibrateActionFactory)
 
 interface Step<S: Step<S>> {
-    suspend fun fire(context: Context, data: StepData): StepData
+    suspend fun fire(context: Context, data: StepData): StepResult
     fun factory() : ItemFactory<S>
 
     fun getUuid(): UUID
 
     fun issues(context: Context): List<StepIssue<S>>
+}
+
+sealed class StepResult private constructor() {
+    data object Skipped : StepResult()
+
+    data class Proceed(val data: StepData) : StepResult()
+    data class Erred(val message: String) : StepResult()
 }
 
 data class StepData(val values: Map<DataPoint, String>) {
@@ -49,12 +56,10 @@ data class StepData(val values: Map<DataPoint, String>) {
 
 interface StepIssue<S> {
     @Composable
-    fun issueComponent()
+    fun IssueComponent()
 }
 
 interface TriggerStep<T : Any, S : TriggerStep<T, S>> : Step<S> {
-    override suspend fun fire(context: Context, data: StepData) = data
-
     fun initialToStepDataImpl(ctx: Context, initial: T): StepData
 
     fun tryCastInput(obj: Any) : T?
@@ -147,10 +152,12 @@ suspend fun dispatch(ctx: Context, msg: Any) {
         .forEach {auto ->
             auto.trigger!!.tryCastInput(msg) ?.let {
                 Log.i("Model", "Triggering automation $auto")
-                var data = (auto.trigger as TriggerStep<Any, *>).initialToStepDataImpl(ctx, it)
-                data = auto.trigger.fire(ctx, data)
-                data = auto.action!!.fire(ctx, data)
-                // output: data
+                val data = (auto.trigger as TriggerStep<Any, *>).initialToStepDataImpl(ctx, it)
+                var result = auto.trigger.fire(ctx, data)
+                if (result is StepResult.Proceed) {
+                    result = auto.action!!.fire(ctx, result.data)
+                }
+                Log.i("Model", "Triggering automation $auto resulted in $result")
             }
         }
 }

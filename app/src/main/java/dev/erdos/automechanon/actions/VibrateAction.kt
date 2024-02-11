@@ -14,14 +14,15 @@ import dev.erdos.automechanon.Lens
 import dev.erdos.automechanon.ItemFactory
 import dev.erdos.automechanon.StepData
 import dev.erdos.automechanon.StepIssue
+import dev.erdos.automechanon.StepResult
 import org.json.JSONObject
 import java.util.UUID
 
 class VibrateAction(private val uuid: UUID) : ActionStep<VibrateAction> {
-    override suspend fun fire(context: Context, data: StepData): StepData {
+    override suspend fun fire(context: Context, data: StepData): StepResult {
         Log.i(VibrateAction::class.java.canonicalName, "Vibrating")
         vibrator(context).vibrate()
-        return data
+        return StepResult.Proceed(data)
     }
 
     private fun vibrator(context: Context) = if (Build.VERSION.SDK_INT>=31) {

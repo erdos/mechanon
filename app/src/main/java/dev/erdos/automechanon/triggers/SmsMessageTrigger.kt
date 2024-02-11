@@ -9,6 +9,7 @@ import dev.erdos.automechanon.ItemFactory
 import dev.erdos.automechanon.Lens
 import dev.erdos.automechanon.StepData
 import dev.erdos.automechanon.StepIssue
+import dev.erdos.automechanon.StepResult
 import dev.erdos.automechanon.TriggerStep
 import org.json.JSONObject
 import java.util.UUID
@@ -16,6 +17,9 @@ import java.util.UUID
 val MESSAGE = DataPoint("message")
 
 class SmsMessageTrigger(private val uuid: UUID) : TriggerStep<SmsMessage, SmsMessageTrigger> {
+
+    override suspend fun fire(context: Context, data: StepData): StepResult = StepResult.Proceed(data)
+
     override fun initialToStepDataImpl(ctx: Context, initial: SmsMessage): StepData {
         return StepData(mapOf(MESSAGE to initial.messageBody))
     }

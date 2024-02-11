@@ -24,6 +24,7 @@ import dev.erdos.automechanon.ItemFactory
 import dev.erdos.automechanon.Lens
 import dev.erdos.automechanon.StepData
 import dev.erdos.automechanon.StepIssue
+import dev.erdos.automechanon.StepResult.Proceed
 import dev.erdos.automechanon.update
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -43,7 +44,7 @@ data class WebhookAction(private val uuid: UUID, val url: String, val method: St
     override suspend fun fire(context: Context, data: StepData) =
         withContext(Dispatchers.IO) {
             val body = fetch(url, method, data.interpolate(payloadPattern))
-            StepData(mapOf(response to body))
+            Proceed(StepData(mapOf(response to body)))
         }
 
     override fun factory() = WebhookActionFactory
