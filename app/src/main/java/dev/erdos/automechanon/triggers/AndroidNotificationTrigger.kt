@@ -32,7 +32,7 @@ import dev.erdos.automechanon.update
 import org.json.JSONObject
 import java.util.UUID
 
-val PACK = DataPoint("pack")
+val PACKAGE = DataPoint("package")
 val TICKER = DataPoint("ticker")
 val TITLE = DataPoint("title")
 val TEXT = DataPoint("text")
@@ -44,7 +44,8 @@ data class AndroidNotificationTrigger(private val uuid: UUID, val appNamePattern
     override suspend fun fire(context: Context, data: StepData) =
         if (appNamePattern.isNullOrBlank()) {
             StepResult.Proceed(data)
-        } else if (data.values[APP]!!.contains(appNamePattern, true)) {
+        } else if (data.values[APP]!!.contains(appNamePattern, true)
+            || data.values[PACKAGE]!!.contains(appNamePattern, true)) {
             StepResult.Proceed(data)
         } else {
             StepResult.Skipped
@@ -61,7 +62,7 @@ data class AndroidNotificationTrigger(private val uuid: UUID, val appNamePattern
         return StepData(
             mapOf(
                 APP to sourceAppName(ctx, initial),
-                PACK to pack,
+                PACKAGE to pack,
                 TICKER to (ticker ?: ""),
                 TITLE to (title ?: ""),
                 TEXT to text))
@@ -101,7 +102,7 @@ val NotificationTriggerFactory = object: ItemFactory<AndroidNotificationTrigger>
     override fun fromJson(node: JSONObject) = AndroidNotificationTrigger(
         UUID.fromString(node.getString("uuid")),
         node.optString("appNamePattern"))
-    override fun produces() = setOf(PACK, TICKER, TITLE, TEXT, APP)
+    override fun produces() = setOf(PACKAGE, TICKER, TITLE, TEXT, APP)
 
     @Composable override fun MakeSettings(model: Lens<AndroidNotificationTrigger>) {
         val data = model.asMutableLiveData()

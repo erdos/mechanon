@@ -1,11 +1,19 @@
 # Mechanon App
 
-A simple Android app to run integrations locally. Primary use cases:
+<img align="right" width="140" src="https://github.com/erdos/mechanon/assets/5559823/352f2b27-d97c-40c7-a3c6-3b3de837ad68"/>
+<img align="right" width="140" src="https://github.com/erdos/mechanon/assets/5559823/0c05b1a7-6a5c-47a7-a6a4-0552aa5cb6b0"/>
 
-- Forwarding all incoming SMS or notifications to an own custom webhook.
+The best Android app to configure and then just forget about. You can use it to automate your phone, for example:
 
-  <img align="right" width="140" src="https://github.com/erdos/mechanon/assets/5559823/352f2b27-d97c-40c7-a3c6-3b3de837ad68"/>
-  <img align="right" width="140" src="https://github.com/erdos/mechanon/assets/5559823/0c05b1a7-6a5c-47a7-a6a4-0552aa5cb6b0"/>
+- To forward all incoming SMS or notifications to a webhook.
+
+**Usage:**
+
+- Go to the [Releases](https://github.com/erdos/mechanon/releases) page to download the latest APK file.
+
+![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+[![EPL 2.0](https://img.shields.io/badge/License-EPL%202.0-red.svg)](https://www.eclipse.org/legal/epl-2.0/)
 
 ## Motivation
 
@@ -20,8 +28,11 @@ allowing you to verify and customize the application according to your needs.
 
 ## Contribution
 
-Have you encountered a bug or perhaps have a brilliant feature idea? Excellent!
-Please open an Issue to initiate a constructive discussion.
+- Have you encountered a bug or perhaps have a brilliant feature idea?
+- Do you want to make it fit better for your use case?
+- Have an idea for improving the code quality?
+
+Excellent! Please open an Issue to initiate a constructive discussion.
 For those feeling adventurous and confident, we welcome Pull Requests to enhance this project.
 
 ## License

@@ -102,6 +102,7 @@ fun MainScreen(liveData: LiveData<Automations>) {
 
 fun jumpToAutomation(ctx: Context, automation: Automation) {
     val intent = Intent(ctx, EditAutomationActivity::class.java)
+    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
     intent.putExtra("uuid", automation.uuid.toString())
     ctx.startActivity(intent)
 }

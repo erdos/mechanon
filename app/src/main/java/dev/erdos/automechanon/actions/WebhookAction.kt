@@ -24,6 +24,7 @@ import dev.erdos.automechanon.ItemFactory
 import dev.erdos.automechanon.Lens
 import dev.erdos.automechanon.StepData
 import dev.erdos.automechanon.StepIssue
+import dev.erdos.automechanon.StepResult
 import dev.erdos.automechanon.StepResult.Proceed
 import dev.erdos.automechanon.update
 import kotlinx.coroutines.Dispatchers
@@ -37,21 +38,27 @@ import java.net.URL
 import java.util.UUID
 
 
-val response = DataPoint("response")
+val RESPONSE = DataPoint("response")
+val STATUS = DataPoint("status")
 
 data class WebhookAction(private val uuid: UUID, val url: String, val method: String, val payloadPattern: String) : ActionStep<WebhookAction> {
 
     override suspend fun fire(context: Context, data: StepData) =
         withContext(Dispatchers.IO) {
-            val body = fetch(url, method, data.interpolate(payloadPattern))
-            Proceed(StepData(mapOf(response to body)))
+            val (status, body) = fetch(url, method, data.interpolate(payloadPattern))
+            if (status in setOf(200, 201, 202, 203, 204)) {
+                val newData = mapOf(RESPONSE to body, STATUS to status.toString())
+                Proceed(StepData(data.values + newData))
+            } else {
+                StepResult.Erred("Unexpected response status code $status")
+            }
         }
 
     override fun factory() = WebhookActionFactory
     override fun getUuid() = uuid
     override fun issues(context: Context): List<StepIssue<WebhookAction>> = emptyList()
 
-    private fun fetch(url: String, method: String, body: String): String {
+    private fun fetch(url: String, method: String, body: String): Pair<Int, String> {
         val urlConn = URL(url).openConnection() as HttpURLConnection
         urlConn.requestMethod = method
         urlConn.setRequestProperty("Content-Type", "text/plain; charset=utf-8")
@@ -75,9 +82,9 @@ data class WebhookAction(private val uuid: UUID, val url: String, val method: St
         }
 
         return if (istream != null) {
-            BufferedReader(istream.reader()).use { it.readText() }
+            urlConn.responseCode to BufferedReader(istream.reader()).use { it.readText() }
         } else {
-            ""
+            urlConn.responseCode to ""
         }
     }
 }
@@ -109,7 +116,7 @@ val WebhookActionFactory = object : ItemFactory<WebhookAction> {
         payloadPattern = node.optString("payload", "")
     )
 
-    override fun produces()= setOf<DataPoint>() // TODO: body, status, etc
+    override fun produces() = setOf<DataPoint>() // TODO: body, status, etc
 
     @Composable
     override fun MakeSettings(model: Lens<WebhookAction>) {
