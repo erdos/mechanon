@@ -3,7 +3,6 @@ package dev.erdos.automechanon.triggers
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.provider.Settings
 import android.service.notification.StatusBarNotification
 import android.util.Log
 import androidx.compose.foundation.layout.Column
@@ -24,6 +23,7 @@ import androidx.core.content.ContextCompat.startActivity
 import dev.erdos.automechanon.DataPoint
 import dev.erdos.automechanon.ItemFactory
 import dev.erdos.automechanon.Lens
+import dev.erdos.automechanon.NotificationService
 import dev.erdos.automechanon.StepData
 import dev.erdos.automechanon.StepIssue
 import dev.erdos.automechanon.StepResult
@@ -72,14 +72,12 @@ data class AndroidNotificationTrigger(private val uuid: UUID, val appNamePattern
 
     override fun factory(): ItemFactory<AndroidNotificationTrigger> = NotificationTriggerFactory
     override fun getUuid(): UUID = uuid
-    override fun issues(context: Context): List<StepIssue<AndroidNotificationTrigger>> {
-        val notificationListener = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
-        return if (notificationListener == null || !notificationListener.contains(context.packageName)) {
-            listOf(ISSUE_MISSING_ACCESS)
-        } else {
+    override fun issues(context: Context): List<StepIssue<AndroidNotificationTrigger>> =
+        if (NotificationService.notificationListenerConnected) {
             emptyList()
+        } else {
+            listOf(ISSUE_MISSING_ACCESS)
         }
-    }
 }
 
 val ISSUE_MISSING_ACCESS = object : StepIssue<AndroidNotificationTrigger> {

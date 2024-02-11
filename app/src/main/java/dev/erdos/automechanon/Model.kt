@@ -98,7 +98,7 @@ data class Automation(
     constructor() : this(title = "New Automation", trigger = null, action = null)
     constructor(json: JSONObject) : this(
         uuid = UUID.fromString(json.getString("uuid")),
-        title = json.optString("title", "- no title"),
+        title = json.optString("title", "N/A"),
         trigger = json.optJSONObject("trigger")?.let {
                 TRIGGERS.find { f -> it.getString("class") == f.jsonDiscriminator() }?.fromJson(it)
             },
